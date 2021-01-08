@@ -15,8 +15,9 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#ifndef NOMAIN
 #include <iostream>
+#include <interface/interface.h>
 
 #include "bitboard.h"
 #include "endgame.h"
@@ -27,28 +28,43 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
-namespace PSQT {
-  void init();
+
+int main(int argc, char *argv[]) {
+
+    std::cout << engine_info() << std::endl;
+
+    EngineInterface *iface = EngineInterface::getInstance();
+    iface->setPosition(StartFEN);
+    std::cout << *iface << std::endl;
+
+    iface->makeMove("e2e4");
+    iface->flip();
+    std::cout << *iface << std::endl;
+
+    Search::LimitsType limits;
+    limits.depth = 14;
+
+    for (int i = 0; i < 10; ++i) {
+        Move m = *iface->bestMove(limits, false);
+        iface->makeMove(m);
+        std::cout << *iface << std::endl;
+        iface->flip();
+    }
+
+    iface->newGame();
+
+    iface->makeMove("a2a3");
+    iface->flip();
+    std::cout << *iface << std::endl;
+
+    for (int i = 0; i < 10; ++i) {
+        Move m = *iface->bestMove(limits, false);
+        iface->makeMove(m);
+        std::cout << *iface << std::endl;
+        iface->flip();
+    }
+
+    Threads.set(0);
+    return 0;
 }
-
-int main(int argc, char* argv[]) {
-
-  std::cout << engine_info() << std::endl;
-
-  CommandLine::init(argc, argv);
-  UCI::init(Options);
-  Tune::init();
-  PSQT::init();
-  Bitboards::init();
-  Position::init();
-  Bitbases::init();
-  Endgames::init();
-  Threads.set(size_t(Options["Threads"]));
-  Search::clear(); // After threads are up
-  Eval::NNUE::init();
-
-  UCI::loop(argc, argv);
-
-  Threads.set(0);
-  return 0;
-}
+#endif

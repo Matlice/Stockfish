@@ -262,9 +262,9 @@ void UCI::loop(int argc, char* argv[]) {
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
 
-      else if (token == "setoption")  setoption(is);
+      else if (token == "setoption")  setoption(is); //done
       else if (token == "go")         go(pos, is, states);
-      else if (token == "position")   position(pos, is, states);
+      else if (token == "position")   position(pos, is, states); //done set and make
       else if (token == "ucinewgame") Search::clear();
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 

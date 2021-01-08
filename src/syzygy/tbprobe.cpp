@@ -28,14 +28,14 @@
 #include <type_traits>
 #include <mutex>
 
-#include "../bitboard.h"
-#include "../movegen.h"
-#include "../position.h"
-#include "../search.h"
-#include "../types.h"
-#include "../uci.h"
+#include "bitboard.h"
+#include "movegen.h"
+#include "position.h"
+#include "search.h"
+#include "types.h"
+#include "uci.h"
 
-#include "tbprobe.h"
+#include "syzygy/tbprobe.h"
 
 #ifndef _WIN32
 #include <fcntl.h>

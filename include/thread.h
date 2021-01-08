@@ -81,7 +81,10 @@ public:
 
 struct MainThread : public Thread {
 
-  using Thread::Thread;
+  //using Thread::Thread;
+  MainThread(size_t n, Move *bestMoveLocation) : Thread(n) {
+      this->bestMoveLocation = bestMoveLocation;
+  }
 
   void search() override;
   void check_time();
@@ -92,6 +95,9 @@ struct MainThread : public Thread {
   int callsCnt;
   bool stopOnPonderhit;
   std::atomic_bool ponder;
+
+private:
+    Move * bestMoveLocation;
 };
 
 
@@ -103,7 +109,7 @@ struct ThreadPool : public std::vector<Thread*> {
 
   void start_thinking(Position&, StateListPtr&, const Search::LimitsType&, bool = false);
   void clear();
-  void set(size_t);
+  void set(size_t, Move * bestMoveLocation = nullptr);
 
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }

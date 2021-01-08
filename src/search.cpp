@@ -272,6 +272,7 @@ void MainThread::search() {
 
   bestPreviousScore = bestThread->rootMoves[0].score;
 
+   /** modified in order to get the reference to the best found move **/
   // Send again PV info if we have a new best thread
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
@@ -282,6 +283,11 @@ void MainThread::search() {
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
+
+  if(this->bestMoveLocation != nullptr) {
+      *(this->bestMoveLocation) = bestThread->rootMoves[0].pv[0];
+      assert(*(this->bestMoveLocation) != MOVE_NULL);
+  }
 }
 
 

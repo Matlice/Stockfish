@@ -124,7 +124,7 @@ void Thread::idle_loop() {
 /// Created and launched threads will immediately go to sleep in idle_loop.
 /// Upon resizing, threads are recreated to allow for binding if necessary.
 
-void ThreadPool::set(size_t requested) {
+void ThreadPool::set(size_t requested, Move * bestMoveLocation) {
 
   if (size() > 0) { // destroy any existing thread(s)
       main()->wait_for_search_finished();
@@ -134,7 +134,7 @@ void ThreadPool::set(size_t requested) {
   }
 
   if (requested > 0) { // create new thread(s)
-      push_back(new MainThread(0));
+      push_back(new MainThread(0, bestMoveLocation));
 
       while (size() < requested)
           push_back(new Thread(size()));

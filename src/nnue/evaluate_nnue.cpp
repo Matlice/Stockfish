@@ -21,13 +21,13 @@
 #include <iostream>
 #include <set>
 
-#include "../evaluate.h"
-#include "../position.h"
-#include "../misc.h"
-#include "../uci.h"
-#include "../types.h"
+#include "evaluate.h"
+#include "position.h"
+#include "misc.h"
+#include "uci.h"
+#include "types.h"
 
-#include "evaluate_nnue.h"
+#include "nnue/evaluate_nnue.h"
 
 namespace Eval::NNUE {
 
