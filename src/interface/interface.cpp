@@ -35,8 +35,10 @@ EngineInterface::EngineInterface(bool isChess960,
     Search::clear(); // After threads are up
     Eval::NNUE::init();
 
+    this->bis_960 = isChess960;
+
     this->renewState();
-    this->pos.set(StartFEN, false, &states->back(), Threads.main());
+    this->pos.set(StartFEN, isChess960, &states->back(), Threads.main());
     if (startingOptions != nullptr)
         for (auto &startingOption : *startingOptions)
             this->setOption(startingOption.first, startingOption.second);
@@ -81,15 +83,17 @@ void EngineInterface::newGame() {
     Search::clear();
 }
 
-void EngineInterface::bestMoveAsync(Search::LimitsType &limits, bool ponder) {
+void EngineInterface::bestMoveAsync(Search::LimitsType& limits, bool ponder) {
     this->is_searching = true;
     this->_bestMove = MOVE_NULL;
     Threads.start_thinking(this->pos, this->states, limits, ponder);
 }
 
+__attribute__((optimize("O0")))
 Move * EngineInterface::getBestMove() {
     assert(this->is_searching);
-    while(this->_bestMove == MOVE_NULL);
+    while(this->_bestMove == MOVE_NULL)
+       ;//std::cout << "waiting " << std::endl;
     this->is_searching = false;
     return &this->_bestMove;
 }
@@ -110,4 +114,10 @@ void EngineInterface::flip() {
 
 void EngineInterface::renewState() {
     this-> states = std::make_unique<std::deque<StateInfo>>(1);
+}
+
+float EngineInterface::getScore(bool print){
+    float f;
+    Eval::int_trace(this->pos, print, &f);
+    return f;
 }

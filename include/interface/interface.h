@@ -18,11 +18,14 @@ namespace PSQT {
 class EngineInterface {
 private:
     EngineInterface(bool, std::map<std::string, UCI::Option, UCI::CaseInsensitiveLess> * startingOptions);
+    EngineInterface(){initialized = false;}
+    bool initialized;
     Position pos;
     StateListPtr states;
     bool is_searching;
     Move _bestMove;
     void renewState();
+    bool bis_960;
 public:
     friend std::ostream & operator<<(std::ostream& os, const EngineInterface& iface);
     static EngineInterface *getInstance();
@@ -38,6 +41,8 @@ public:
     Move * bestMove(Search::LimitsType &limits, bool ponder);
     void flip();
     void newGame();
+    [[nodiscard]] bool is_960() const{return this->bis_960;}
+    float getScore(bool print=false);
 };
 
 #endif //STOCKFISH_INTERFACE_H
