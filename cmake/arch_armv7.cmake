@@ -1,0 +1,12 @@
+function(arch_armv7)
+    set(ARCH armv7 PARENT_SCOPE)
+    set(BITS 32 PARENT_SCOPE)
+    set(PREFETCH YES PARENT_SCOPE)
+
+    foreach (arg IN ITEMS ${ARGN})
+        if (${arg} STREQUAL neon)
+            set(POPCNT YES PARENT_SCOPE)
+            set(NEON YES PARENT_SCOPE)
+        endif ()
+    endforeach ()
+endfunction(arch_armv7)

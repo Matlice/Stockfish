@@ -1,47 +1,179 @@
 cmake_minimum_required(VERSION 3.0)
 project(stockfish)
-
+enable_language(CXX)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_VERBOSE ON)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(COMPILER_TYPE gcc) #gcc /* not supported yet -> */mingw icc clang
+set(OS linux) #linux osx win android
+set(JNI_ROOT /opt/jdk-14.0.1)
 
-ADD_DEFINITIONS(-DUSE_PTHREADS -DIS_64BIT -DNDEBUG -DUSE_POPCNT -DUSE_SSE41 -DUSE_SSSE3 -DUSE_SSE2)
+execute_process(COMMAND git rev-parse --short HEAD RESULT_VARIABLE SHORT_HASH_RESULT OUTPUT_VARIABLE VERSION)
+string(SUBSTRING "${VERSION}" 0, 8, VERSION)
+message("VERSION: " ${VERSION})
 
-add_compile_options(-Wall -Wcast-qual -fno-exceptions -std=c++17 -pedantic -Wextra -Wshadow -m64 -O3 -msse -msse3 -mpopcnt -msse4.1 -mssse3 -msse2 -flto)
+include(cmake/default_stockfish_settings.cmake)
+setdefaults()
+include(cmake/arch_amd64.cmake)
+arch_amd64(modern)
+
+print_prams()
 
 set(EvalFileDefaultName "nn-62ef826d1a6d.nnue")
 if (NOT EXISTS ${EvalFileDefaultName})
     message("Downloading ${EvalFileDefaultName}")
-    execute_process(COMMAND wget -q "https://tests.stockfishchess.org/api/nn/${EvalFileDefaultName}")
-else ()
-    message("already there")
+    file(
+            DOWNLOAD
+            https://tests.stockfishchess.org/api/nn/${EvalFileDefaultName}
+            ${CMAKE_BINARY_DIR}/${EvalFileDefaultName}
+            SHOW_PROGRESS
+    )
 endif ()
 
+
 include_directories(include)
-file(GLOB src_files
+file(GLOB stockfish_src
         "src/nnue/features/*.cpp"
         "src/nnue/*.cpp"
         "src/syzygy/*.cpp"
         "src/interface/*.cpp"
         "src/*.cpp")
 
-file(GLOB src_files_jni
+file(GLOB stockfish_jni_src
         "src/jni_adapter/*.cpp")
 
-add_library(stockfish STATIC ${src_files})
+if (${COMPILER_TYPE} STREQUAL gcc)
+    add_compile_options(-pedantic -Wextra -Wshadow)
+    if (NOT ${ARCH} STREQUAL armv7 AND NOT ${ARCH} STREQUAL armv8)
+        add_compile_options(-m${BITS})
+        add_link_options(-m${BITS})
+    endif ()
+    if (${OS} STREQUAL android)
+        add_compile_options(-m${BITS})
+        add_link_options(-m${BITS})
+    endif ()
+    if (${ARCH} STREQUAL armv7)
+        add_link_options(-latomic)
+    endif ()
+    if (NOT ${OS} STREQUAL osx)
+        add_link_options(-Wl,--no-as-needed)
+    else ()
+        add_compile_options(-arch ${ARCH} -mmacosx-version-min=10.14)
+        add_link_options(-arch ${ARCH} -mmacosx-version-min=10.14)
+    endif ()
+endif ()
+
+if (NOT ${OS} STREQUAL android)
+    add_compile_definitions(USE_PTHREADS)
+    link_libraries(pthread)
+endif ()
+
+if (${DEBUG} STREQUAL YES)
+    add_compile_definitions(NDEBUG)
+endif ()
+
+if (${SANITIZE} STREQUAL YES)
+    add_compile_options(-fsanitize=leak -fsanitize=thread -fsanitize=undefined)
+endif ()
+
+if (NOT ${OPTIMIZATION} STREQUAL 0)
+    add_compile_options(-O${OPTIMIZATION})
+    if (${OS} STREQUAL android)
+        add_compile_options(-fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp)
+    elseif (${OS} STREQUAL osx)
+        add_compile_options(-mdynamic-no-pic)
+    endif ()
+endif ()
+
+if (${BITS} STREQUAL 64)
+    add_compile_definitions(IS_64BIT)
+endif ()
+
+if (NOT ${PREFETCH} STREQUAL YES)
+    add_compile_definitions(NO_PREFETCH)
+elseif (${SSE} STREQUAL YES)
+    add_compile_options(-msse)
+endif ()
+
+if (${POPCNT} STREQUAL YES)
+    add_compile_definitions(USE_POPCNT)
+    if (NOT ${ARCH} STREQUAL armv7 AND NOT ${ARCH} STREQUAL armv8 AND NOT ${ARCH} STREQUAL aarch64 AND NOT ${ARCH} STREQUAL ppc64)
+        add_compile_options(-msse3 -mpopcnt)
+    endif ()
+endif ()
+
+if (${AVX2} STREQUAL YES)
+    add_compile_definitions(USE_AVX2)
+    add_compile_options(-mavx2)
+endif ()
+
+if (${AVX512} STREQUAL YES)
+    add_compile_definitions(USE_AVX512)
+    add_compile_options(-mavx512f -mavx512bw)
+endif ()
+
+if (${VNNI256} STREQUAL YES)
+    add_compile_definitions(USE_VNNI)
+    add_compile_options(-mavx512f -mavx512bw -mavx512vnni -mavx512dq -mavx512vl -mprefer-vector-width=256)
+endif ()
+
+if (${VNNI512} STREQUAL YES)
+    add_compile_definitions(USE_VNNI)
+    add_compile_options(-mavx512vnni -mavx512dq -mavx512vl)
+endif ()
+
+if (${SSE41} STREQUAL YES)
+    add_compile_definitions(USE_SSE41)
+    add_compile_options(-msse4.1)
+endif ()
+if (${SSSE3} STREQUAL YES)
+    add_compile_definitions(USE_SSSE3)
+    add_compile_options(-mssse3)
+endif ()
+if (${SSE2} STREQUAL YES)
+    add_compile_definitions(USE_SSE2)
+    add_compile_options(-msse2)
+endif ()
+if (${MMX} STREQUAL YES)
+    add_compile_definitions(USE_MMX)
+    add_compile_options(-mmmx)
+endif ()
+
+if (${NEON} STREQUAL YES)
+    add_compile_definitions(USE_NEON)
+    if (${OS} STREQUAL linux AND NOT ${ARCH} STREQUAL armv8)
+        add_compile_options(-mfpu=neon)
+    endif ()
+endif ()
+
+if (${PEXT} STREQUAL YES)
+    add_compile_definitions(USE_PEXT)
+    add_compile_options(-mbmi2)
+endif ()
+
+if (${OS} STREQUAL android)
+    add_compile_options(-fPIC)
+    add_link_options(-fPIC -pie)
+endif ()
+
+add_library(stockfish STATIC ${stockfish_src})
 target_link_libraries(stockfish pthread)
+target_link_options(stockfish PUBLIC -fPIC)
+target_compile_options(stockfish PUBLIC -fPIC)
 target_compile_definitions(stockfish PUBLIC EvalFileDefaultName="${EvalFileDefaultName}")
-target_compile_definitions(stockfish PUBLIC NOMAIN)
+set_target_properties(stockfish PROPERTIES SUFFIX ".${OS}.a")
 
 add_executable(stockfish_test src/test_exec/main.cpp)
 target_link_libraries(stockfish_test pthread stockfish)
 
-add_library(stockfishjni SHARED ${src_files_jni})
+add_library(stockfishjni SHARED ${stockfish_jni_src})
 target_link_libraries(stockfishjni pthread stockfish)
+target_link_options(stockfishjni PUBLIC -fPIC)
+target_compile_options(stockfishjni PUBLIC -fPIC)
 target_include_directories(stockfishjni PUBLIC stockfish_jni/jni_include)
-target_include_directories(stockfishjni PUBLIC /opt/jdk-14.0.1/include/)
-target_include_directories(stockfishjni PUBLIC /opt/jdk-14.0.1/include/linux/)
+target_include_directories(stockfishjni PUBLIC ${JNI_ROOT}/include/)
+target_include_directories(stockfishjni PUBLIC ${JNI_ROOT}/include/linux/)
+set_target_properties(stockfishjni PROPERTIES SUFFIX ".${OS}.${VERSION}.so")
 
