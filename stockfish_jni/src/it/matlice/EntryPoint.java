@@ -10,17 +10,17 @@ public class EntryPoint {
         Stockfish engine = Stockfish.getInstance();
         //engine.nSetOption("Use NNUE", "false");
 
-        var s = new Scanner(System.in);
-        engine.nDbgDisplay();
-        while(true){
-            if(engine.nMakeMove(s.next())) {
-                engine.flip();
-                engine.nSearchBestMove(15, false);
-                engine.nMakeMove(engine.getFoundNextMoveStr());
-                engine.flip();
-                engine.nDbgDisplay();
-                engine.nGetScore(true);
-            }
-        }
+//        var s = new Scanner(System.in);
+//        engine.nDbgDisplay();
+//        while(true){
+//            if(engine.nMakeMove(s.next())) {
+//                engine.flip();
+//                engine.nSearchBestMove(15, false);
+//                engine.nMakeMove(engine.getFoundNextMoveStr());
+//                engine.flip();
+//                engine.nDbgDisplay();
+//                engine.nGetScore(true);
+//            }
+//        }
     }
 }

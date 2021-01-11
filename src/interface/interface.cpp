@@ -121,3 +121,7 @@ float EngineInterface::getScore(bool print){
     Eval::int_trace(this->pos, print, &f);
     return f;
 }
+
+std::string EngineInterface::getPositionFen() {
+    return this->pos.fen();
+}

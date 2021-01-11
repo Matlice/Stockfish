@@ -60,7 +60,7 @@ JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nSearchBestMove
  * Method:    getFoundNextMove
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_it_matlice_stockfish_Stockfish_getFoundNextMove
+JNIEXPORT jint JNICALL Java_it_matlice_stockfish_Stockfish_nGetFoundNextMove
   (JNIEnv *, jobject);
 
 /*
@@ -68,7 +68,7 @@ JNIEXPORT jint JNICALL Java_it_matlice_stockfish_Stockfish_getFoundNextMove
  * Method:    getFoundNextMoveStr
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_getFoundNextMoveStr
+JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_nGetFoundNextMoveStr
   (JNIEnv *, jobject);
 
 /*
@@ -76,7 +76,7 @@ JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_getFoundNextMoveSt
  * Method:    flip
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_flip
+JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nFlip
   (JNIEnv *, jobject);
 
 /*
@@ -92,6 +92,10 @@ JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nDbgDisplay
 
 JNIEXPORT jfloat JNICALL Java_it_matlice_stockfish_Stockfish_nGetScore
         (JNIEnv *, jobject, jboolean);
+
+JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_nGetFen
+    (JNIEnv * env, jobject jthis);
+
 
 #ifdef __cplusplus
 }

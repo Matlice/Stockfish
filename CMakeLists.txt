@@ -34,6 +34,7 @@ endif ()
 
 
 include_directories(include)
+include_directories(coffeecatch)
 file(GLOB stockfish_src
         "src/nnue/features/*.cpp"
         "src/nnue/*.cpp"

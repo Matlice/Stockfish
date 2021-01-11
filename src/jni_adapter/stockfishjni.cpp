@@ -26,17 +26,14 @@ std::string c_string(JNIEnv *env, jstring jStr) {
     return ret;
 }
 
-EngineInterface * iface;
-
 JNIEXPORT void JNICALL
 Java_it_matlice_stockfish_Stockfish_nGetInstance(JNIEnv *env, jobject jthis, jboolean is_ches_960) {
-    auto options_map = std::map<std::string, UCI::Option, UCI::CaseInsensitiveLess>();
-    iface = EngineInterface::getInstance(static_cast<bool>(is_ches_960), &options_map);
-    iface->setPosition(StartFEN);
+    EngineInterface::getInstance(static_cast<bool>(is_ches_960),
+                                 new std::map<std::string, UCI::Option, UCI::CaseInsensitiveLess>())->setPosition(
+            StartFEN);
 }
 
 JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nDestroyInstance(JNIEnv *env, jobject jthis) {
-    iface = nullptr;
     Threads.set(0);
 }
 
@@ -46,48 +43,53 @@ Java_it_matlice_stockfish_Stockfish_nSetOption(JNIEnv *env, jobject jthis, jstri
 }
 
 JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nSetPosition
-        (JNIEnv * env, jobject jthis, jstring fen){
-    iface->setPosition(c_string(env, fen));
+        (JNIEnv *env, jobject jthis, jstring fen) {
+    EngineInterface::getInstance()->setPosition(c_string(env, fen));
 }
 
 JNIEXPORT jboolean JNICALL Java_it_matlice_stockfish_Stockfish_nMakeMove
-        (JNIEnv * env, jobject jthis, jstring move){
-    return iface->makeMove(c_string(env, move));
+        (JNIEnv *env, jobject jthis, jstring move) {
+    return EngineInterface::getInstance()->makeMove(c_string(env, move));
 }
 
 JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nSearchBestMove
-        (JNIEnv * env, jobject jthis, jint depth, jboolean ponder){
+        (JNIEnv *env, jobject jthis, jint depth, jboolean ponder) {
     Search::LimitsType c_limits;
     c_limits.depth = depth;
-    iface->bestMoveAsync(c_limits, ponder);
+    EngineInterface::getInstance()->bestMoveAsync(c_limits, ponder);
 }
 
-JNIEXPORT jint JNICALL Java_it_matlice_stockfish_Stockfish_getFoundNextMove
-        (JNIEnv * env, jobject jthis){
-    return (unsigned int) *iface->getBestMove();
+JNIEXPORT jint JNICALL Java_it_matlice_stockfish_Stockfish_nGetFoundNextMove
+        (JNIEnv *env, jobject jthis) {
+    return (unsigned int) *EngineInterface::getInstance()->getBestMove();
 }
 
-JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_getFoundNextMoveStr
-        (JNIEnv * env, jobject jthis){
-    return env->NewStringUTF(UCI::move(*iface->getBestMove(), iface->is_960()).c_str());
+JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_nGetFoundNextMoveStr
+        (JNIEnv *env, jobject jthis) {
+    return env->NewStringUTF(UCI::move(*EngineInterface::getInstance()->getBestMove(),
+                                       EngineInterface::getInstance()->is_960()).c_str());
 }
 
-JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_flip
-        (JNIEnv * env, jobject jthis){
-    iface->flip();
+JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nFlip
+        (JNIEnv *env, jobject jthis) {
+    EngineInterface::getInstance()->flip();
 }
 
 JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nNewGame
-        (JNIEnv *, jobject){
-    iface->newGame();
+        (JNIEnv *, jobject) {
+    EngineInterface::getInstance()->newGame();
 }
 
 JNIEXPORT void JNICALL Java_it_matlice_stockfish_Stockfish_nDbgDisplay
-        (JNIEnv *, jobject){
-    std::cout << *iface << std::endl;
+        (JNIEnv *, jobject) {
+    std::cout << *EngineInterface::getInstance() << std::endl;
 }
 
 JNIEXPORT jfloat JNICALL Java_it_matlice_stockfish_Stockfish_nGetScore
-        (JNIEnv *, jobject, jboolean print){
-    return iface->getScore(print);
+        (JNIEnv *, jobject, jboolean print) {
+    return EngineInterface::getInstance()->getScore(print);
+}
+
+JNIEXPORT jstring JNICALL Java_it_matlice_stockfish_Stockfish_nGetFen(JNIEnv * env, jobject jthis){
+    return env->NewStringUTF(EngineInterface::getInstance()->getPositionFen().c_str());
 }

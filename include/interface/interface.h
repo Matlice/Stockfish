@@ -34,6 +34,7 @@ public:
     static bool setOption(const std::string& name, const std::string& value);
     void setPosition(Position &pos);
     void setPosition(const std::string& fen);
+    std::string getPositionFen();
     bool makeMove(Move move);
     bool makeMove(std::string move);
     void bestMoveAsync(Search::LimitsType &limits, bool ponder);
