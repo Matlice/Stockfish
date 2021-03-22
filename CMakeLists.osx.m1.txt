@@ -7,10 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(COMPILER_TYPE gcc) #gcc /* not supported yet -> */mingw icc clang
-set(OS linux) #linux osx win android
-#set(OS win)
-set(JNI_ROOT /opt/jdk-14.0.1)
-#set(JNI_ROOT "C:\\Program Files\\Java\\jdk-14.0.1")
+#set(OS osx) #linux osx win android
+set(JNI_ROOT /opt/homebrew/Cellar/openjdk/15.0.1)
 
 execute_process(COMMAND git rev-parse --short HEAD RESULT_VARIABLE SHORT_HASH_RESULT OUTPUT_VARIABLE VERSION)
 string(SUBSTRING "${VERSION}" 0, 8, VERSION)
@@ -18,8 +16,8 @@ message("VERSION: " ${VERSION})
 
 include(cmake/default_stockfish_settings.cmake)
 setdefaults()
-include(cmake/arch_amd64.cmake)
-arch_amd64(modern)
+include(cmake/arch_arm64.cmake)
+arch_arm64(modern)
 
 print_prams()
 

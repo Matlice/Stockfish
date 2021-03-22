@@ -1,0 +1,7 @@
+function(arch_arm64)
+    set(ARCH arm64 PARENT_SCOPE)
+    set(BITS 64 PARENT_SCOPE)
+    set(PREFETCH YES PARENT_SCOPE)
+    set(POPCNT YES PARENT_SCOPE)
+    set(NEON YES PARENT_SCOPE)
+endfunction(arch_arm64)
