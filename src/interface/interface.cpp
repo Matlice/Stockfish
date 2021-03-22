@@ -92,8 +92,9 @@ void EngineInterface::bestMoveAsync(Search::LimitsType& limits, bool ponder) {
 __attribute__((optimize("O0")))
 Move * EngineInterface::getBestMove() {
     assert(this->is_searching);
-    while(this->_bestMove == MOVE_NULL)
-       ;//std::cout << "waiting " << std::endl;
+    while(this->_bestMove == MOVE_NULL) {
+        std::cout << ""; // only needed if compiling with clang
+    }
     this->is_searching = false;
     return &this->_bestMove;
 }
